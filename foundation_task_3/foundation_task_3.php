@@ -1,8 +1,9 @@
 <?php
 class Palindrome {
     public static function isPalindrome($word) {
+        $word = strtolower(str_replace(' ', '', $word));
         $reversedWord = strrev($word);
-        echo " -".$reversedWord."- ";
+
         if ($reversedWord === $word)
             return true;
         else
