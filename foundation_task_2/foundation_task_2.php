@@ -1,28 +1,24 @@
 <?php
 function printFibonacciSequence($FirstNumInt, $SecondNumInt, $GoalNumberInt) {
 
-    $EchoNumberStr = strval($FirstNumInt);
+    $OutputStr = strval($FirstNumInt);
 
-    if ($FirstNumInt > 0) {
-        echo ", ".$EchoNumberStr;
-    } else {
-        echo $EchoNumberStr;
-    }
+    if ($FirstNumInt <= $GoalNumberInt) {
 
-    if ($FirstNumInt < $GoalNumberInt) {
+        if ($FirstNumInt > 0) {
+            echo ", ".$OutputStr;
+        } else {
+            echo $OutputStr;
+        }
+
         $NewNumInt = $FirstNumInt + $SecondNumInt;
         $FirstNewNumInt = $SecondNumInt;
         $SecondNewNumInt = $NewNumInt;
         printFibonacciSequence($FirstNewNumInt, $SecondNewNumInt, $GoalNumberInt);
     }
-     
-    // else if ($firstNumInt === 34) {
-    //     //Added this additional else if to remove the "," at the end of the print
-    //     echo $firstNumInt;
-    // }
 }
 
-printFibonacciSequence(0, 1, 10000);
+printFibonacciSequence(0, 1, 34);
 ?>
 
 <!-- <?php
