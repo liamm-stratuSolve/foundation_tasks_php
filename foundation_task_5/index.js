@@ -10,8 +10,8 @@ function postMethod() {
     console.log(options.body);
 
     fetch("./fibonacci_sequence.php", options)
-        .then(response => buildOutput(response.json))
-        .then(response => console.log(response.json))
+        .then(response => response.json())
+        .then(json => buildOutput(json))
         .then(json => console.log(json))
         .catch(error => console.log("Error: " + error));
 }

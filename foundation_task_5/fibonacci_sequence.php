@@ -4,8 +4,7 @@ try {
     $Data = json_decode($Body);
     if($Data) {
         http_response_code(200);
-        $ResultStr = "This works, then it is the function";
-//        $ResultStr = printFibonacciSequence($Data->input);
+        $ResultStr = printFibonacciSequence(0, 1, $Data->input, "");
         die(json_encode($ResultStr));
     } else {
         http_response_code(500);
@@ -17,26 +16,25 @@ try {
     die();
 }
 
-function printFibonacciSequence($InputGoalInt) {
-    
-    return buildString(0, 1, $InputGoalInt);
+function buildResponseString($OutputNumberInt, $OutputResultStr) {
+
+    if ($OutputNumberInt > 0) {
+        return  $OutputResultStr . ", " . $OutputNumberInt;
+    } else {
+        return $OutputNumberInt;
+    }
 }
 
-function buildString($FirstNumInt, $SecondNumInt, $GoalNumberInt){
-    $StringNumberStr = strval($FirstNumInt);
+function printFibonacciSequence($FirstNumInt, $SecondNumInt, $GoalNumberInt, $StringValueStr) {
 
-    if ($FirstNumInt > 0) {
-        echo ", " . $StringNumberStr;
-    } else {
-        echo $StringNumberStr;
-    }
+    $NewStringStr = buildResponseString($FirstNumInt, $StringValueStr);
 
     if ($FirstNumInt <= $GoalNumberInt) {
-        return;
+        $NewNumInt = $FirstNumInt + $SecondNumInt;
+        $FirstNewNumInt = $NewNumInt;
+//        $SecondNewNumInt = $NewNumInt;
+        printFibonacciSequence($FirstNewNumInt, $SecondNumInt, $GoalNumberInt, $NewStringStr);
+    } else {
+        return $NewStringStr;
     }
-
-    $NewNumInt = $FirstNumInt + $SecondNumInt;
-    $FirstNewNumInt = $SecondNumInt;
-    $SecondNewNumInt = $NewNumInt;
-    buildString($FirstNewNumInt, $SecondNewNumInt, $GoalNumberInt);
 }
