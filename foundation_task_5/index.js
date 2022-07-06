@@ -7,17 +7,13 @@ function postMethod() {
         body: JSON.stringify({"input": inputNumber})
     };
 
-    console.log(options.body);
-
     fetch("./fibonacci_sequence.php", options)
         .then(response => response.json())
         .then(json => buildOutput(json))
-        .then(json => console.log(json))
         .catch(error => console.log("Error: " + error));
 }
 
 function buildOutput(dataJson){
-    let outputString = JSON.stringify(dataJson);
     let root = document.getElementById("root");
 
     let resultOutput = document.createElement("p");

@@ -16,25 +16,25 @@ try {
     die();
 }
 
-function buildResponseString($OutputNumberInt, $OutputResultStr) {
+function printFibonacciSequence($FirstNumInt, $SecondNumInt, $GoalNumberInt, $StringInStr) : string {
 
-    if ($OutputNumberInt > 0) {
-        return  $OutputResultStr . ", " . $OutputNumberInt;
+    $StringOutStr = buildResponseString($FirstNumInt, $StringInStr);
+
+    if ($GoalNumberInt >= $SecondNumInt) {
+        $NewNumInt = $FirstNumInt + $SecondNumInt;
+        $FirstNewNumInt = $SecondNumInt;
+        $SecondNewNumInt = $NewNumInt;
+        return printFibonacciSequence($FirstNewNumInt, $SecondNewNumInt, $GoalNumberInt, $StringOutStr);
     } else {
-        return $OutputNumberInt;
+        return $StringOutStr;
     }
 }
 
-function printFibonacciSequence($FirstNumInt, $SecondNumInt, $GoalNumberInt, $StringValueStr) {
+function buildResponseString($CurrentNumberInt, $CurrentStringStr) {
 
-    $NewStringStr = buildResponseString($FirstNumInt, $StringValueStr);
-
-    if ($FirstNumInt <= $GoalNumberInt) {
-        $NewNumInt = $FirstNumInt + $SecondNumInt;
-        $FirstNewNumInt = $NewNumInt;
-//        $SecondNewNumInt = $NewNumInt;
-        printFibonacciSequence($FirstNewNumInt, $SecondNumInt, $GoalNumberInt, $NewStringStr);
+    if ($CurrentNumberInt > 0) {
+        return  $CurrentStringStr . ", " . $CurrentNumberInt;
     } else {
-        return $NewStringStr;
+        return $CurrentNumberInt;
     }
 }
