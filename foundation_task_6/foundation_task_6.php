@@ -1,104 +1,105 @@
 <?php
 //    Start time count and script:
-    $StartTime = microtime(true);
+    $StartTimeInt = microtime(true);
     echo "Script started...<br><br>";
 
 //    Connect to the DB with the login details already set in the function:
-    $Conn = connectToDB();
+    $ConnectionObj = connectToDB();
 
 //    Call the class and construct the class variable for the connection:
-    $Person = new Person($Conn);
+    $PersonObj = new Person($ConnectionObj);
 
 //    Generate the array with 10 person records, the details have been preset in the function:
     $ListOfPeopleArr = generatePeopleArray();
 
 //    Loop through the 10 records and create each one:
-    foreach ($ListOfPeopleArr as $PersonRecord){
-        $Person->createPerson($PersonRecord);
-    }
+//    foreach ($ListOfPeopleArr as $PersonRecordArr){
+//        $PersonObj->createPerson($PersonRecordArr);
+//    }
 
 //    !! -- CAREFUL -- !! Delete all existing records in the DB:
-//    $Person->deleteAllPeople();
+//    $PersonObj->deleteAllPeople();
 
 //    Load all records in the DB:
-    $Person->loadAllPeople();
+    $PersonObj->loadAllPeople();
 
 //    End script and get end time count
     echo "<br>Script completed...<br>";
 
-    $EndTime = microtime(true);
-    $TotalRuntime = round(($EndTime - $StartTime), 4);
-    echo "Total runtime is ". $TotalRuntime . " seconds";
+    $EndTimeInt = microtime(true);
+    $TotalRuntimeInt = round(($EndTimeInt - $StartTimeInt), 4);
+    echo "Total runtime is ". $TotalRuntimeInt . " seconds";
 
     class Person {
-        public $Connection;
+        public $ConnectionObj;
 
-        function __construct($Connection){
-            $this->Connection = $Connection;
+        function __construct($ConnectionObj){
+            $this->ConnectionObj = $ConnectionObj;
         }
 
-        function createPerson($PersonRecord) {
-            $Sql = "INSERT INTO `person`(`FirstName`, `Surname`, `DateOfBirth`, `EmailAddress`, `Age`) VALUES ('".
-                $PersonRecord["FirstName"]."','".$PersonRecord["Surname"]."','".$PersonRecord["DateOfBirth"]."','".
-                $PersonRecord["Email"]."','".$PersonRecord["Age"]."')";
+        function createPerson($PersonRecordArr) {
+            $SqlStr = "INSERT INTO `Person`(`FirstName`, `Surname`, `DateOfBirth`, `EmailAddress`, `Age`) VALUES ('".
+                $PersonRecordArr["FirstName"]."','".$PersonRecordArr["Surname"]."','".$PersonRecordArr["DateOfBirth"].
+                "','".$PersonRecordArr["EmailAddress"]."','".$PersonRecordArr["Age"]."')";
 
-            $CreatedResult = $this->Connection->query($Sql);
+            $ResultObj = $this->ConnectionObj->query($SqlStr);
 
-            if($CreatedResult === true) {
+            if($ResultObj === true) {
                 echo "Record created successfully. <br>";
             } else {
-                echo "Failed to create record for ". $PersonRecord["FirstName"] ." ". $PersonRecord["Surname"];
+                echo "Failed to create record for ". $PersonRecordArr["FirstName"] ." ". $PersonRecordArr["Surname"];
             }
         }
 
-        function loadPerson($Result) {
-            if ($Result->num_rows > 0){
-                while($Row = $Result->fetch_assoc()) {
-                    echo "First Name: " . $Row["FirstName"]. " - Surname: " . $Row["Surname"]. " - Date of Birth: " .
-                        $Row["DateOfBirth"]. " - Email: " . $Row["EmailAddress"]. " - Age: " . $Row["Age"]. "<br>";
+        function loadPerson($ResultObj) {
+            if ($ResultObj->num_rows > 0){
+                while($RowArr = $ResultObj->fetch_assoc()) {
+                    echo "First Name: " . $RowArr["FirstName"]. " - Surname: " . $RowArr["Surname"].
+                        " - Date of Birth: " . $RowArr["DateOfBirth"]. " - Email: " . $RowArr["EmailAddress"].
+                        " - Age: " . $RowArr["Age"]. "<br>";
                 }
             } else {
                 echo "No Results<br>";
             }
         }
 
-        function savePerson($PersonDetails) {
-            $Sql = "UPDATE `person` SET `FirstName`='".$PersonDetails["FirstName"]."',`Surname`='".
-                $PersonDetails["Surname"]."',`DateOfBirth`='".$PersonDetails["DateOfBirth"]."',`EmailAddress`='".
-                $PersonDetails["Email"]."',`Age`='".$PersonDetails["Age"]."' WHERE `FirstName`='".
-                $PersonDetails["FirstName"]."'";
-            $Result = $this->Connection->query($Sql);
+        function savePerson($PersonDetailsArr) {
+            $SqlStr = "UPDATE `Person` SET `FirstName`='".$PersonDetailsArr["FirstName"]."',`Surname`='".
+                $PersonDetailsArr["Surname"]."',`DateOfBirth`='".$PersonDetailsArr["DateOfBirth"].
+                "',`EmailAddress`='". $PersonDetailsArr["EmailAddress"]."',`Age`='".$PersonDetailsArr["Age"].
+                "' WHERE `FirstName`='".$PersonDetailsArr["FirstName"]."'";
+            $ResultObj = $this->ConnectionObj->query($SqlStr);
 
-            if ($Result === true) {
+            if ($ResultObj === true) {
                 echo "Record updated successfully.</br>";
             } else {
-                echo "Failed to update the record for ". $PersonDetails["FirstName"];
+                echo "Failed to update the record for ". $PersonDetailsArr["FirstName"];
             }
         }
 
-        function deletePerson($FirstName) {
-            $Sql = "DELETE FROM `person` WHERE FirstName=".$FirstName;
-            $Result = $this->Connection->query($Sql);
+        function deletePerson($FirstNameStr, $SurnameStr) {
+            $SqlStr = "DELETE FROM `Person` WHERE `FirstName`='".$FirstNameStr."' AND `Surname`='".$SurnameStr."'";
+            $ResultObj = $this->ConnectionObj->query($SqlStr);
 
-            if ($Result === true) {
+            if ($ResultObj === true) {
                 echo "Record deleted successfully.";
             } else {
-                echo "Failed to delete record: ". $FirstName;
+                echo "Failed to delete record: ". $FirstNameStr . " " . $SurnameStr;
             }
 
         }
 
         function loadAllPeople() {
-            $Sql = "SELECT * FROM `person`";
-            $Result = $this->Connection->query($Sql);
+            $SqlStr = "SELECT * FROM `Person`";
+            $ResultObj = $this->ConnectionObj->query($SqlStr);
 
-            $this->loadPerson($Result);
+            $this->loadPerson($ResultObj);
         }
 
         function deleteAllPeople() {
-            $Sql = "DELETE FROM `person`";
-            $Result = $this->Connection->query($Sql);
-            if ($Result === true) {
+            $SqlStr = "DELETE FROM `Person`";
+            $ResultObj = $this->ConnectionObj->query($SqlStr);
+            if ($ResultObj === true) {
                 echo "All records deleted successfully.<br>";
             } else {
                 echo "Failed to delete all records.";
@@ -107,18 +108,18 @@
     }
 
     function connectToDB() {
-        $Server = "localhost";
-        $Password = "";
-        $Username = "root";
-        $DataBase = "people_task_6";
+        $ServerStr = "localhost";
+        $PasswordStr = "";
+        $UsernameStr = "root";
+        $DataBaseStr = "Person_Database";
 
-        $Connect = new mysqli($Server,$Username, $Password, $DataBase);
+        $ConnectionObj = new mysqli($ServerStr,$UsernameStr, $PasswordStr, $DataBaseStr);
 
-        if ($Connect->connect_error){
-            die("Unsuccessful: " . $Connect->connect_error);
+        if ($ConnectionObj->connect_error){
+            die("Unsuccessful: " . $ConnectionObj->connect_error);
         }
 
-        return $Connect;
+        return $ConnectionObj;
     }
 
     function generatePeopleArray(): array{
@@ -127,70 +128,70 @@
                 "FirstName"=>"Spongebob",
                 "Surname"=>"SquarePants",
                 "DateOfBirth"=>"1986/07/14",
-                "Email"=>"s.squarepants@bikinibottom.com",
+                "EmailAddress"=>"s.squarepants@bikinibottom.com",
                 "Age"=> 35
             ),
             array(
                 "FirstName"=>"Patrick",
                 "Surname"=>"Starfish",
                 "DateOfBirth"=>"1984/02/26",
-                "Email"=>"p.starfish@bikinibottom.com",
+                "EmailAddress"=>"p.starfish@bikinibottom.com",
                 "Age"=> 38
             ),
             array(
                 "FirstName"=>"Michael",
                 "Surname"=>"Jameson",
                 "DateOfBirth"=>"1997/01/20",
-                "Email"=>"jamesonm@gmail.com",
+                "EmailAddress"=>"jamesonm@gmail.com",
                 "Age"=> 35
             ),
             array(
                 "FirstName"=>"Abe",
                 "Surname"=>"Wilson",
                 "DateOfBirth"=>"2002/05/09",
-                "Email"=>"abewil112@htmail.com",
+                "EmailAddress"=>"abewil112@htmail.com",
                 "Age"=> 20
             ),
             array(
                 "FirstName"=>"Patricia",
                 "Surname"=>"Meyer",
                 "DateOfBirth"=>"1956/12/25",
-                "Email"=>"patricia.meyer@houss.co.zak",
+                "EmailAddress"=>"patricia.meyer@houss.co.zak",
                 "Age"=> 65
             ),
             array(
                 "FirstName"=>"Lisa",
                 "Surname"=>"Simpson",
                 "DateOfBirth"=>"1981/05/09",
-                "Email"=>"lisa.jsimpson@startv.com",
+                "EmailAddress"=>"lisa.jsimpson@startv.com",
                 "Age"=> 41
             ),
             array(
                 "FirstName"=>"Marge",
                 "Surname"=>"Simpson",
                 "DateOfBirth"=>"1958/03/19",
-                "Email"=>"marge.simpson@startv.com",
+                "EmailAddress"=>"marge.simpson@startv.com",
                 "Age"=> 64
             ),
             array(
                 "FirstName"=>"Bart",
                 "Surname"=>"Simpson",
                 "DateOfBirth"=>"1978/02/23",
-                "Email"=>"bart.simpson@startv.com",
+                "EmailAddress"=>"bart.simpson@startv.com",
                 "Age"=> 44
             ),
             array(
                 "FirstName"=>"Maggie",
                 "Surname"=>"Simpson",
                 "DateOfBirth"=>"1989/01/14",
-                "Email"=>"maggie.simpson@startv.com",
+                "EmailAddress"=>"maggie.simpson@startv.com",
                 "Age"=> 33
             ),
             array(
                 "FirstName"=>"Homer",
                 "Surname"=>"Simpson",
                 "DateOfBirth"=>"1956/05/12",
-                "Email"=>"homer.simpson@startv.com",
+                "EmailAddress"=>"homer.simpson@startv.com",
                 "Age"=> 66
             )
         );
