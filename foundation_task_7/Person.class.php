@@ -7,72 +7,55 @@
             $this->ConnectionObj = $ConnectionObj;
         }
 
-        function createPerson($PersonRecordArr) {
+        function createPerson($PersonRecordArr): bool{
             $SqlStr = "INSERT INTO `Person`(`FirstName`, `Surname`, `DateOfBirth`, `EmailAddress`, `Age`) VALUES ('".
                 $PersonRecordArr["FirstName"]."','".$PersonRecordArr["Surname"]."','".$PersonRecordArr["DateOfBirth"].
                 "','".$PersonRecordArr["EmailAddress"]."','".$PersonRecordArr["Age"]."')";
 
-            $ResultObj = $this->ConnectionObj->query($SqlStr);
-
-            if($ResultObj === true) {
-                echo "Record created successfully. <br>";
-            } else {
-                echo "Failed to create record for ". $PersonRecordArr["FirstName"] ." ". $PersonRecordArr["Surname"];
-            }
+            return $this->ConnectionObj->query($SqlStr);
         }
 
-        function loadPerson($ResultObj) {
+        function loadPerson($ResultObj): array {
+            $PersonArr = array();
+
             if ($ResultObj->num_rows > 0){
                 while($RowArr = $ResultObj->fetch_assoc()) {
-                    echo "First Name: " . $RowArr["FirstName"]. " - Surname: " . $RowArr["Surname"].
-                        " - Date of Birth: " . $RowArr["DateOfBirth"]. " - Email: " . $RowArr["EmailAddress"].
-                        " - Age: " . $RowArr["Age"]. "<br>";
+                    $PersonArr[] = array(
+                        "FirstName" => $RowArr["FirstName"],
+                        "Surname" => $RowArr["Surname"],
+                        "DateOfBirth" => $RowArr["DateOfBirth"],
+                        "EmailAddress" => $RowArr["EmailAddress"],
+                        "Age" => $RowArr["Age"]);
                 }
-            } else {
-                echo "No Results<br>";
             }
+
+            return $PersonArr;
         }
 
-        function savePerson($PersonDetailsArr) {
+        function savePerson($PersonDetailsArr): bool {
             $SqlStr = "UPDATE `Person` SET `FirstName`='".$PersonDetailsArr["FirstName"]."',`Surname`='".
                 $PersonDetailsArr["Surname"]."',`DateOfBirth`='".$PersonDetailsArr["DateOfBirth"].
                 "',`EmailAddress`='". $PersonDetailsArr["EmailAddress"]."',`Age`='".$PersonDetailsArr["Age"].
                 "' WHERE `FirstName`='".$PersonDetailsArr["FirstName"]."'";
-            $ResultObj = $this->ConnectionObj->query($SqlStr);
-
-            if ($ResultObj === true) {
-                echo "Record updated successfully.</br>";
-            } else {
-                echo "Failed to update the record for ". $PersonDetailsArr["FirstName"];
-            }
+            return $this->ConnectionObj->query($SqlStr);
         }
 
-        function deletePerson($FirstNameStr, $SurnameStr) {
+        function deletePerson($FirstNameStr, $SurnameStr): bool {
             $SqlStr = "DELETE FROM `Person` WHERE `FirstName`='".$FirstNameStr."' AND `Surname`='".$SurnameStr."'";
-            $ResultObj = $this->ConnectionObj->query($SqlStr);
-
-            if ($ResultObj === true) {
-                echo "Record deleted successfully.";
-            } else {
-                echo "Failed to delete record: ". $FirstNameStr . " " . $SurnameStr;
-            }
-
+            return $this->ConnectionObj->query($SqlStr);
         }
 
-        function loadAllPeople() {
+        function loadAllPeople(): array {
+            $PeopleArr = array();
             $SqlStr = "SELECT * FROM `Person`";
             $ResultObj = $this->ConnectionObj->query($SqlStr);
+            $PeopleArr[] = $this->loadPerson($ResultObj);
 
-            $this->loadPerson($ResultObj);
+            return $PeopleArr;
         }
 
-        function deleteAllPeople() {
+        function deleteAllPeople(): bool {
             $SqlStr = "DELETE FROM `Person`";
-            $ResultObj = $this->ConnectionObj->query($SqlStr);
-            if ($ResultObj === true) {
-                echo "All records deleted successfully.<br>";
-            } else {
-                echo "Failed to delete all records.";
-            }
+            return $this->ConnectionObj->query($SqlStr);
         }
 }
