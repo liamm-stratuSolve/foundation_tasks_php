@@ -9,14 +9,14 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
     <title>Person Manager Portal</title>
 </head>
-<body onload="loadAllPeople()">
+<body onload="getPeople()">
     <nav id="navbar">
         <p>Person Manager Portal</p>
     </nav>
     <div id="root">
         <div id="container">
             <button id="searchBtn">Search for Person</button>
-            <button id="addBtn">Add Person</button>
+            <button id="addBtn" onclick="createPerson()">Add Person</button>
             <div id="table-container">
                 <table id="personTable">
                     <tr>
@@ -30,6 +30,8 @@
             </div>
         </div>
     </div>
+    <footer><button id="deleteAllBtn" onclick="deleteAllPeople()">Delete All Person Records</button></footer>
+    <script src="logic.js"></script>
     <script src="index.js"></script>
 </body>
 </html>

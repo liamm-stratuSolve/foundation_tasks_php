@@ -7,15 +7,15 @@
     $ConnectionObj = connectToDB();
 
 //    Call the class and construct the class variable for the connection:
-    $PersonObj = new Person($ConnectionObj);
+    $PersonObj = new Person_Class($ConnectionObj);
 
 //    Generate the array with 10 person records, the details have been preset in the function:
     $ListOfPeopleArr = generatePeopleArray();
 
 //    Loop through the 10 records and create each one:
-//    foreach ($ListOfPeopleArr as $PersonRecordArr){
-//        $PersonObj->createPerson($PersonRecordArr);
-//    }
+    foreach ($ListOfPeopleArr as $PersonRecordArr){
+        $PersonObj->createPerson($PersonRecordArr);
+    }
 
 //    !! -- CAREFUL -- !! Delete all existing records in the DB:
 //    $PersonObj->deleteAllPeople();
@@ -30,7 +30,7 @@
     $TotalRuntimeInt = round(($EndTimeInt - $StartTimeInt), 4);
     echo "Total runtime is ". $TotalRuntimeInt . " seconds";
 
-    class Person {
+    class Person_Class {
         public $ConnectionObj;
 
         function __construct($ConnectionObj){
