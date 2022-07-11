@@ -1,45 +1,83 @@
-function postPerson(personDetails){
+$(document).ready(() => {
+    searchAllPeople()
+});
+
+function postPerson(personDetails, actionType){
+
+    let requestData = {"ActionType": actionType, "PersonDetails": personDetails};
+
     $.ajax({
         url : 'foundation_task_7.php',
         type : 'POST',
         contentType: "application/json",
         dataType : 'json',
-        data : JSON.stringify(personDetails),
+        data : JSON.stringify(requestData),
         success : function () {
             clearTable();
-            getPeople();
+            searchAllPeople({"ActionType": "all"});
         },
         error: function(error) {
-            alert("Error: \n" + JSON.stringify(error));
+            console.log("Error: " + error.status);
+            if(error.status === 404) {
+                generateTable(error, "error-404");
+            } else {
+                console.warn("Error: \n" + error.status+ ": " + error.statusText);
+            }
         }
     })
 }
 
-function getPeople(){
+function getPerson(personDetails){
+    let actionType = personDetails["ActionType"];
 
-    let data = {"ActionType": "all"};
+    switch (actionType) {
+        case "all":
+            $.ajax({
+                url : 'foundation_task_7.php',
+                type : 'GET',
+                success : function (result) {
+                    clearTable();
+                    generateTable(result, actionType);
+                },
+                error: function(error) {
+                    if(error.status === 404) {
+                        generateTable(error, "error-404");
+                    } else {
+                        console.warn("Error: \n" + error.status+ ": " + error.statusText);
+                    }
+                }
 
-    $.ajax({
-        url : 'foundation_task_7.php',
-        type : 'GET',
-        data : JSON.stringify(data),
-        success : function (result) {
-            generateTable(result);
-        },
-        error : function () {
-            alert("Error: \n" + JSON.stringify(error));
-        }
-    })
-}
+            });
+            break;
 
-function getPerson(){
-
+        case "search":
+            $.ajax({
+                url : 'foundation_task_7.php',
+                type : 'POST',
+                contentType: "application/json",
+                dataType : 'json',
+                data : JSON.stringify(personDetails),
+                success : function (result) {
+                    clearTable();
+                    generateTable(result, "single");
+                },
+                error: function(error) {
+                    if(error.status === 404) {
+                        clearTable();
+                        generateTable(error, "error-404");
+                    } else {
+                        console.warn("Error: \n" + error.status+ ": " + error.statusText);
+                    }
+                }
+            })
+            break;
+    }
 }
 
 function putPerson(firstName, surname, personDetails){
 
     let originalData = {"OriginalFirstName": firstName, "OriginalSurname": surname};
-    let data = {"originalData": originalData, "newData": personDetails};
+    let data = {"OriginalData": originalData, "NewData": personDetails};
 
     $.ajax({
         url : 'foundation_task_7.php',
@@ -49,10 +87,10 @@ function putPerson(firstName, surname, personDetails){
         data : JSON.stringify(data),
         success : function () {
             clearTable();
-            getPeople();
+            searchAllPeople({"ActionType": "all"});
         },
         error: function(error) {
-            alert("Error: \n" + JSON.stringify(error));
+            console.warn("Error: \n" + error.status+ ": " + error.statusText);
         }
     })
 }
@@ -77,10 +115,10 @@ function deletePeople(deleteType, personFirstName, personSurname){
                     break;
             }
             clearTable();
-            getPeople();
+            searchAllPeople({"ActionType": "all"});
         },
         error: function(error) {
-            alert("Error: \n" + JSON.stringify(error));
+            console.warn("Error: \n" + error.status+ ": " + error.statusText);
         }
     });
 }

@@ -3,7 +3,12 @@ function createPerson() {
 }
 
 function searchPerson() {
-    openForm("search");
+    openForm("search", "", "");
+}
+
+function searchAllPeople() {
+    let requestData = {"ActionType": "all"};
+    getPerson(requestData);
 }
 
 function deletePerson(personFirstName, personSurname){
@@ -34,18 +39,29 @@ function closeForm() {
     closeElement.remove();
 }
 
-function generatePersonDetails(){
+function generateRequestData(actionType){
 
-    const inputForm = document.getElementById("inputForm");
-    let personAge = calculateAge(inputForm.elements["inputDateOfBirth"].value);
+    let inputForm = document.getElementById("inputForm");
+    let personDetails = [];
 
-    return {
-        "FirstName" : inputForm.elements["inputFirstName"].value,
-        "Surname" : inputForm.elements["inputSurname"].value,
-        "DateOfBirth" : inputForm.elements["inputDateOfBirth"].value,
-        "EmailAddress" : inputForm.elements["inputEmailAddress"].value,
-        "Age" : personAge
-    };
+    if (actionType === "search") {
+        personDetails = {
+            "ActionType" : actionType,
+            "FirstName" : inputForm.elements["inputFirstName"].value,
+            "Surname" : inputForm.elements["inputSurname"].value
+        };
+    } else {
+        let personAge = calculateAge(inputForm.elements["inputDateOfBirth"].value);
+        personDetails = {
+            "FirstName" : inputForm.elements["inputFirstName"].value,
+            "Surname" : inputForm.elements["inputSurname"].value,
+            "DateOfBirth" : inputForm.elements["inputDateOfBirth"].value,
+            "EmailAddress" : inputForm.elements["inputEmailAddress"].value,
+            "Age" : personAge
+        };
+    }
+
+    return personDetails;
 }
 
 function calculateAge(birthDate) {
@@ -53,29 +69,67 @@ function calculateAge(birthDate) {
     return new Date(today - new Date(birthDate)).getFullYear() - 1970;
 }
 
-function generateTable(responseData) {
-
-    let dataArray = JSON.parse(responseData);
+function generateTable(responseData, actionType) {
 
     let personTable = document.getElementById("personTable");
 
-    for (let i = 0; i < dataArray.length; i++) {
-        dataArray[i].forEach(person => {
-            let table =
-                "<tr>"+
-                    "<td>"+person.FirstName+"</td>"+
-                    "<td>"+person.Surname+"</td>"+
-                    "<td>"+person.DateOfBirth+"</td>"+
-                    "<td>"+person.EmailAddress+"</td>"+
-                    "<td>"+person.Age+"</td>"+
-                    "<td><button class='editBtn' onclick='updatePerson(\""+person.FirstName+"\", \""+person.Surname+"\")'>Edit</button>"+
-                    "<button class='deleteBtn' onclick='deletePerson(\""+person.FirstName+"\", \""+person.Surname+"\")'>Delete</button>"+
-                    "</td>"+
-                "</tr>";
-            personTable.innerHTML += table;
-        })
-    }
+    let table =
+        "<tr>" +
+            "<th>First Name</th>" +
+            "<th>Surname</th>" +
+            "<th>Date of Birth</th>" +
+            "<th>Email Address</th>" +
+            "<th>Age</th>"+
+            "<th> </th>"+
+        "</tr>";
 
+    switch (actionType) {
+        case "all":
+            let dataArray = JSON.parse(responseData);
+            for(let i = 0; i<dataArray.length; i++){
+                let person = dataArray[i];
+                table += buildTable("details", person.FirstName, person.Surname, person.DateOfBirth,
+                    person.EmailAddress, person.Age);
+            }
+            break;
+
+        case "single":
+            for(let i = 0; i<responseData.length; i++){
+                let person = responseData[i];
+                table += buildTable("details", person.FirstName, person.Surname, person.DateOfBirth,
+                    person.EmailAddress, person.Age);
+            }
+            break;
+
+        case "error-404":
+            table += buildTable(actionType);
+    }
+    personTable.innerHTML += table;
+}
+
+function buildTable(tableType, firstName, surname, dateOfBirth, emailAddress, age) {
+    if (tableType === "error-404") {
+        let table =
+            "<tr>"+
+                "<td colspan='6'>No data found...</td>"+
+            "</tr>";
+
+        return table;
+    } else {
+        let table =
+            "<tr>" +
+                "<td>" + firstName + "</td>" +
+                "<td>" + surname + "</td>" +
+                "<td>" + dateOfBirth + "</td>" +
+                "<td>" + emailAddress + "</td>" +
+                "<td>" + age + "</td>" +
+                "<td><button class='editBtn' onclick='updatePerson(\"" + firstName + "\", \"" + surname + "\")'>Edit</button>" +
+                "<button class='deleteBtn' onclick='deletePerson(\"" + firstName + "\", \"" + surname + "\")'>Delete</button>" +
+                "</td>" +
+            "</tr>";
+
+        return table;
+    }
 }
 
 function clearTable(){
@@ -108,6 +162,13 @@ class Elements {
         return inputElement;
     }
 
+    createHeading(headingClass, headingID) {
+        let headingElement = document.createElement("h2");
+        headingElement.id = headingID
+
+        return headingElement;
+    }
+
     createButton(buttonType, buttonName, onClick) {
         let buttonElement = document.createElement("button");
         buttonElement.type = buttonType;
@@ -136,7 +197,6 @@ class Elements {
     generateDetailsForm(actionType, personFirstName, personSurname) {
 
         let popupContainer = this.createDiv("popupContainer", "popupContainer");
-        let divContainer = this.createDiv("formContainer", "formPopup");
         let formContainer = this.createForm("inputForm", "formContainer");
         let firstNameLbl = this.createLabel("fNameLbl", "FirstName", "First Name: ");
         let firstName = this.createInput("text", "inputFirstName", "First Name", "FirstName");
@@ -148,57 +208,75 @@ class Elements {
         let emailAddress = this.createInput("text", "inputEmailAddress", "Email Address", "EmailAddress");
         let submitButton = this.createButton("button", "Submit");
         let cancelButton = this.createButton("button", "Cancel");
+        let formHeading = this.createHeading("inputHeading", "inputHeading");
+
+        submitButton.className = "submitBtn";
 
         if (actionType === "update") {
+            formHeading.innerText = "Edit Person Details";
             submitButton.addEventListener(
                 'click', () => {
-                    let personDetails = generatePersonDetails(actionType);
+                    let personDetails = generateRequestData(actionType);
                     putPerson(personFirstName, personSurname, personDetails);
                     closeForm();
                 }
             );
         } else if (actionType === "create") {
+            formHeading.innerText = "Enter New Person Details";
             submitButton.addEventListener(
                 'click', () => {
-                    let personDetails = generatePersonDetails(actionType);
-                    postPerson(personDetails);
+                    let personDetails = generateRequestData(actionType);
+                    postPerson(personDetails, actionType);
                     closeForm();
                 }
             );
         } else {
+            formHeading.innerText = "Enter Search Person's Names";
             submitButton.addEventListener(
                 'click', () => {
-                    let personDetails = generatePersonDetails(actionType);
+                    let personDetails = generateRequestData(actionType);
                     getPerson(personDetails);
                     closeForm();
                 }
-            )
+            );
         }
 
+        cancelButton.className = "cancelBtn";
         cancelButton.addEventListener(
             'click', () => {
                 closeForm();
             }
         );
 
+        switch (actionType) {
+            case "search":
+                formContainer.appendChild(formHeading);
+                formContainer.appendChild(firstNameLbl);
+                formContainer.appendChild(firstName);
+                formContainer.appendChild(lastNameLbl);
+                formContainer.appendChild(lastName);
+                popupContainer.appendChild(formContainer);
+                popupContainer.appendChild(submitButton);
+                popupContainer.appendChild(cancelButton);
+                break;
 
-        formContainer.appendChild(firstNameLbl);
-        formContainer.appendChild(firstName);
-        formContainer.appendChild(lastNameLbl);
-        formContainer.appendChild(lastName);
+            default:
+                formContainer.appendChild(formHeading);
+                formContainer.appendChild(firstNameLbl);
+                formContainer.appendChild(firstName);
+                formContainer.appendChild(lastNameLbl);
+                formContainer.appendChild(lastName);
+                formContainer.appendChild(dobLbl);
+                formContainer.appendChild(dateOfBirth);
+                formContainer.appendChild(emailAddLbl);
+                formContainer.appendChild(emailAddress);
+                popupContainer.appendChild(formContainer);
+                popupContainer.appendChild(submitButton);
+                popupContainer.appendChild(cancelButton);
+                break;
 
-        if (actionType !== "search") {
-            formContainer.appendChild(dobLbl);
-            formContainer.appendChild(dateOfBirth);
-            formContainer.appendChild(emailAddLbl);
-            formContainer.appendChild(emailAddress);
-            divContainer.appendChild(formContainer);
+
         }
-
-        divContainer.appendChild(submitButton);
-        divContainer.appendChild(cancelButton);
-        popupContainer.appendChild(divContainer);
-
         document.getElementById("root").appendChild(popupContainer);
     }
 }

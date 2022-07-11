@@ -9,9 +9,8 @@ try {
 
     switch ($RequestType) {
         case "GET":
-            $RequestDataArr = json_decode($BodyObj);
-            $ResponseArr = $Person->loadAllPeople($RequestDataArr);
-            if ($ResponseArr) {
+            $ResponseArr = $Person->loadAllPeople($BodyObj);
+            if($ResponseArr){
                 http_response_code(200);
                 die(json_encode($ResponseArr));
             }
@@ -21,10 +20,36 @@ try {
 
         case "POST":
             $RequestDataArr = json_decode($BodyObj);
-            if($RequestDataArr) {
-                $CreateResultBool = $Person->createPerson($RequestDataArr);
-                http_response_code(200);
-                die($CreateResultBool);
+            $ActionType = "";
+            if($RequestDataArr){
+
+                foreach ($RequestDataArr as $Key => $Value){
+                    if ($Key === "ActionType") {
+                        $ActionType = $Value;
+                    }
+                }
+
+                switch ($ActionType){
+                    case "create":
+                        $CreateResultBool = $Person->createPerson($RequestDataArr);
+                        if ($CreateResultBool){
+                            http_response_code(200);
+                            die($CreateResultBool);
+                        }
+                        http_response_code(500);
+                        die();
+                        break;
+
+                    case "search":
+                        $ResponseArr = $Person->loadAllPeople($RequestDataArr);
+                        if($ResponseArr){
+                            http_response_code(200);
+                            die(json_encode($ResponseArr));
+                        }
+                        http_response_code(404);
+                        die();
+                        break;
+                }
             }
             http_response_code(500);
             die();
@@ -32,10 +57,10 @@ try {
 
         case "PUT":
             $RequestDataArr = json_decode($BodyObj);
-            if ($RequestDataArr) {
-                $CreateResultBool = $Person->savePerson($RequestDataArr);
+            $CreateResultBool = $Person->savePerson($RequestDataArr);
+            if ($CreateResultBool) {
                 http_response_code(200);
-                die($CreateResultBool);
+                die(json_encode($CreateResultBool));
             }
             http_response_code(500);
             die();
@@ -43,10 +68,10 @@ try {
 
         case "DELETE":
             $RequestDataArr = json_decode($BodyObj);
-            if ($RequestDataArr) {
-                $DeleteResultBool = $Person->deletePerson($RequestDataArr);
+            $DeleteResultBool = $Person->deletePerson($RequestDataArr);
+            if ($DeleteResultBool) {
                 http_response_code(200);
-                die($DeleteResultBool);
+                die(json_encode($DeleteResultBool));
             }
             http_response_code(500);
             die();

@@ -9,20 +9,30 @@
 
         function createPerson($PersonRecordArr): bool{
 
+//            error_log(json_encode($PersonRecordArr));
+
             $NumItemsInt = 0;
             $ItemCountInt = 0;
+            $PersonDetailsArray = array();
             $SqlStr = "INSERT INTO `Person`(`FirstName`, `Surname`, `DateOfBirth`, `EmailAddress`, `Age`)".
-                "VALUES (";
+                " VALUES (";
+
+            foreach ($PersonRecordArr as $Key => $Value) {
+                if($Key !== "ActionType") {
+                    $PersonDetailsArray = $Value;
+                }
+
+            }
 
             //Check each object in the New Date array and count for those that are not blank
-            foreach ($PersonRecordArr as $Item => $Value){
+            foreach ($PersonDetailsArray as $Item => $Value){
                 if($Value){
                     $NumItemsInt++;
                 }
             }
 
             //build the column value set of the query:
-            foreach ($PersonRecordArr as $Key => $Value) {
+            foreach ($PersonDetailsArray as $Key => $Value) {
                 $ItemCountInt++;
 
                 if ($ItemCountInt !== $NumItemsInt) {
@@ -32,7 +42,6 @@
                 }
             }
 
-            error_log($SqlStr);
             return $this->ConnectionObj->query($SqlStr);
         }
 
@@ -65,7 +74,7 @@
 
             //Separate the Json objects into their respective variables
             foreach($PersonDetailsArr as $DataKey => $DataObjects) {
-                if ($DataKey === "originalData") {
+                if ($DataKey === "OriginalData") {
                     $OriginalDataArr = $DataObjects;
                 } else {
                     $NewDataArr = $DataObjects;
@@ -112,30 +121,27 @@
         }
 
         function loadAllPeople($PersonDetails): array {
-            $PeopleArr = array();
-            $SqlStr = "SELECT * FROM `Person`";
-            $ActionTypeStr = "";
+            $SqlStr = "";
             $FirstNameStr = "";
             $SurnameStr = "";
 
-            foreach ($PersonDetails as $Key => $Value) {
-                if($Key === "ActionType") {
-                    $ActionTypeStr = $Value;
-                }else if ($Key === "FirstName"){
-                    $FirstNameStr = $Value;
-                } else {
-                    $SurnameStr = $Value;
+            if ($PersonDetails) {
+                foreach ($PersonDetails as $Key => $Value){
+                    if ($Key === "FirstName") {
+                        $FirstNameStr = $Value;
+                    } else if ($Key === "Surname") {
+                        $SurnameStr = $Value;
+                    }
                 }
-            }
-
-            if ($ActionTypeStr=== "single") {
-                $SqlStr .= "WHERE FirstName='".$FirstNameStr."' AND Surname='".$SurnameStr."'";
+                $SqlStr .= "SELECT * FROM `Person` WHERE FirstName='".$FirstNameStr.
+                    "' AND Surname='".$SurnameStr."'";
+            } else {
+                $SqlStr = "SELECT * FROM `Person`";
             }
 
             $ResultObj = $this->ConnectionObj->query($SqlStr);
-            $PeopleArr[] = $this->loadPerson($ResultObj);
 
-            return $PeopleArr;
+            return $this->loadPerson($ResultObj);
         }
 
         function deletePerson($RequestObj): bool {
