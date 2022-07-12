@@ -14,6 +14,8 @@ function postPerson(personDetails, actionType){
         data : JSON.stringify(requestData),
         success : function () {
             clearTable();
+            closeForm();
+            console.clear();
             searchAllPeople({"ActionType": "all"});
         },
         error: function(error) {

@@ -133,8 +133,8 @@
                         $SurnameStr = $Value;
                     }
                 }
-                $SqlStr .= "SELECT * FROM `Person` WHERE FirstName='".$FirstNameStr.
-                    "' AND Surname='".$SurnameStr."'";
+                $SqlStr .= "SELECT * FROM `Person` WHERE FirstName LIKE '".$FirstNameStr.
+                    "%' AND Surname LIKE '".$SurnameStr."%'";
             } else {
                 $SqlStr = "SELECT * FROM `Person`";
             }

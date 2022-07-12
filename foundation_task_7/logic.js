@@ -1,4 +1,5 @@
 function createPerson() {
+    closeForm();
     openForm("create");
 }
 
@@ -25,18 +26,21 @@ function deleteAllPeople(){
     }
 }
 
-function updatePerson(personFirstName, personSurname) {
-    openForm("update", personFirstName, personSurname);
+function updatePerson(personFirstName, personSurname, dateOfBirth, emailAddress) {
+    closeForm();
+    openForm("update", personFirstName, personSurname, dateOfBirth, emailAddress);
 }
 
-function openForm(actionType, personFirstName, personSurname) {
+function openForm(actionType, personFirstName, personSurname, dateOfBirth, emailAddress) {
     let createElements = new Elements();
-    createElements.generateDetailsForm(actionType, personFirstName, personSurname);
+    createElements.generateDetailsForm(actionType, personFirstName, personSurname, dateOfBirth, emailAddress);
 }
 
 function closeForm() {
     let closeElement = document.getElementById("popupContainer");
-    closeElement.remove();
+    if (closeElement) {
+        closeElement.remove();
+    }
 }
 
 function generateRequestData(actionType){
@@ -45,18 +49,45 @@ function generateRequestData(actionType){
     let personDetails = [];
 
     if (actionType === "search") {
+        let firstName = "";
+        let surname = "";
+
+        if (inputForm.elements["inputFirstName"].value.length > 0 ||
+                inputForm.elements["inputSurname"].value.length > 0) {
+            firstName = inputForm.elements["inputFirstName"].value;
+            surname = inputForm.elements["inputSurname"].value;
+        } else {
+            alertPopMessage("Please fill in one of the fields");
+        }
+
         personDetails = {
             "ActionType" : actionType,
-            "FirstName" : inputForm.elements["inputFirstName"].value,
-            "Surname" : inputForm.elements["inputSurname"].value
+            "FirstName" : firstName,
+            "Surname" : surname
         };
     } else {
         let personAge = calculateAge(inputForm.elements["inputDateOfBirth"].value);
+        let firstName = "";
+        let surname = "";
+        let dateOfBirth = "";
+        let emailAddress = "";
+
+        if (inputForm.elements["inputFirstName"].value.length > 0 &&
+                inputForm.elements["inputSurname"].value.length > 0 &&
+                inputForm.elements["inputDateOfBirth"].value.length > 0 &&
+                inputForm.elements["inputEmailAddress"].value.length > 0) {
+            firstName = inputForm.elements["inputFirstName"].value;
+            surname = inputForm.elements["inputSurname"].value;
+            dateOfBirth = inputForm.elements["inputDateOfBirth"].value;
+            emailAddress = inputForm.elements["inputEmailAddress"].value;
+        } else {
+            alertPopMessage("Please fill in one of the fields");
+        }
         personDetails = {
-            "FirstName" : inputForm.elements["inputFirstName"].value,
-            "Surname" : inputForm.elements["inputSurname"].value,
-            "DateOfBirth" : inputForm.elements["inputDateOfBirth"].value,
-            "EmailAddress" : inputForm.elements["inputEmailAddress"].value,
+            "FirstName" : firstName,
+            "Surname" : surname,
+            "DateOfBirth" : dateOfBirth,
+            "EmailAddress" : emailAddress,
             "Age" : personAge
         };
     }
@@ -75,12 +106,12 @@ function generateTable(responseData, actionType) {
 
     let table =
         "<tr>" +
-            "<th>First Name</th>" +
-            "<th>Surname</th>" +
-            "<th>Date of Birth</th>" +
-            "<th>Email Address</th>" +
-            "<th>Age</th>"+
-            "<th> </th>"+
+            "<th class='col-1'>First Name</th>" +
+            "<th class='col-2'>Surname</th>" +
+            "<th class='col-3'>Date of Birth</th>" +
+            "<th class='col-4'>Email Address</th>" +
+            "<th class='col-5'>Age</th>"+
+            "<th class='col-6 column--button'> </th>"+
         "</tr>";
 
     switch (actionType) {
@@ -118,13 +149,15 @@ function buildTable(tableType, firstName, surname, dateOfBirth, emailAddress, ag
     } else {
         let table =
             "<tr>" +
-                "<td>" + firstName + "</td>" +
-                "<td>" + surname + "</td>" +
-                "<td>" + dateOfBirth + "</td>" +
-                "<td>" + emailAddress + "</td>" +
-                "<td>" + age + "</td>" +
-                "<td><button class='editBtn' onclick='updatePerson(\"" + firstName + "\", \"" + surname + "\")'>Edit</button>" +
-                "<button class='deleteBtn' onclick='deletePerson(\"" + firstName + "\", \"" + surname + "\")'>Delete</button>" +
+                "<td class='col-1'>" + firstName + "</td>" +
+                "<td class='col-2'>" + surname + "</td>" +
+                "<td class='col-3'>" + dateOfBirth + "</td>" +
+                "<td class='col-4'>" + emailAddress + "</td>" +
+                "<td class='col-5'>" + age + "</td>" +
+                "<td class='col-6 column--button'><button class='editBtn' onclick='updatePerson(\"" + firstName + "\", \"" + surname + "\", \"" +
+                    dateOfBirth + "\", \"" + emailAddress + "\", \"" + "\")'>Edit</button>" +
+                "<button class='deleteBtn' onclick='deletePerson(\"" + firstName + "\", \"" + surname +
+                    "\")'>Delete</button>" +
                 "</td>" +
             "</tr>";
 
@@ -137,6 +170,10 @@ function clearTable(){
     while(tableData.firstChild){
         tableData.removeChild(tableData.firstChild);
     }
+}
+
+function alertPopMessage(messageText){
+    alert(messageText);
 }
 
 class Elements {
@@ -152,11 +189,16 @@ class Elements {
         return labelElement;
     }
 
-    createInput(inputType, inputID, inputPH, inputName) {
+    createInput(inputType, inputID, inputPH, inputAltPH, inputName) {
         let inputElement = document.createElement("input");
         inputElement.type = inputType;
         inputElement.id = inputID;
-        inputElement.placeholder = inputPH;
+
+        if(inputPH === undefined || inputPH === null || inputPH === ""){
+            inputElement.placeholder = inputAltPH;
+        } else {
+            inputElement.value = inputPH;
+        }
         inputElement.name = inputName;
 
         return inputElement;
@@ -194,18 +236,26 @@ class Elements {
         return formElement;
     }
 
-    generateDetailsForm(actionType, personFirstName, personSurname) {
+    generateDetailsForm(actionType, personFirstName, personSurname, personDOB, personEmailAddress) {
 
         let popupContainer = this.createDiv("popupContainer", "popupContainer");
         let formContainer = this.createForm("inputForm", "formContainer");
-        let firstNameLbl = this.createLabel("fNameLbl", "FirstName", "First Name: ");
-        let firstName = this.createInput("text", "inputFirstName", "First Name", "FirstName");
-        let lastNameLbl = this.createLabel("lNameLbl", "inputSurname", "Last Name: ");
-        let lastName = this.createInput("text", "inputSurname", "Surname", "Surname");
-        let dobLbl = this.createLabel("dobLbl", "DateOfBirth", "Date of Birth: ");
-        let dateOfBirth = this.createInput("date", "inputDateOfBirth", "Birthdate", "DateOfBirth");
-        let emailAddLbl = this.createLabel("emailAddLbl", "EmailAddress", "Email Address: ");
-        let emailAddress = this.createInput("text", "inputEmailAddress", "Email Address", "EmailAddress");
+        let firstNameLbl = this.createLabel("fNameLbl", "FirstName",
+            "First Name: ");
+        let firstName = this.createInput("text", "inputFirstName", personFirstName,
+            "First Name", "FirstName");
+        let lastNameLbl = this.createLabel("lNameLbl", "inputSurname",
+            "Last Name: ");
+        let lastName = this.createInput("text", "inputSurname", personSurname,
+            "Surname","Surname");
+        let dobLbl = this.createLabel("dobLbl", "DateOfBirth",
+            "Date of Birth: ");
+        let dateOfBirth = this.createInput("date", "inputDateOfBirth", personDOB,
+            "Date Of Birth","DateOfBirth");
+        let emailAddLbl = this.createLabel("emailAddLbl", "EmailAddress",
+            "Email Address: ");
+        let emailAddress = this.createInput("text", "inputEmailAddress", personEmailAddress,
+            "Email Address", "EmailAddress");
         let submitButton = this.createButton("button", "Submit");
         let cancelButton = this.createButton("button", "Cancel");
         let formHeading = this.createHeading("inputHeading", "inputHeading");
@@ -227,7 +277,7 @@ class Elements {
                 'click', () => {
                     let personDetails = generateRequestData(actionType);
                     postPerson(personDetails, actionType);
-                    closeForm();
+                    // closeForm();
                 }
             );
         } else {
@@ -236,7 +286,7 @@ class Elements {
                 'click', () => {
                     let personDetails = generateRequestData(actionType);
                     getPerson(personDetails);
-                    closeForm();
+                    // closeForm();
                 }
             );
         }
@@ -261,6 +311,15 @@ class Elements {
                 break;
 
             default:
+                firstName.required = true;
+                firstNameLbl.className = "required";
+                lastName.required = true;
+                lastNameLbl.className = "required";
+                dateOfBirth.required = true;
+                dobLbl.className = "required";
+                emailAddress.required = true;
+                emailAddLbl.className = "required";
+
                 formContainer.appendChild(formHeading);
                 formContainer.appendChild(firstNameLbl);
                 formContainer.appendChild(firstName);
@@ -274,9 +333,16 @@ class Elements {
                 popupContainer.appendChild(submitButton);
                 popupContainer.appendChild(cancelButton);
                 break;
-
-
         }
+
+        document.addEventListener(
+            'mouseup', (e) => {
+            let popupWindow = document.getElementById("popupContainer");
+            if(popupWindow && !popupWindow.contains(e.target)) {
+                closeForm();
+            }
+        })
+
         document.getElementById("root").appendChild(popupContainer);
     }
 }

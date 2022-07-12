@@ -10,10 +10,11 @@ body {
 .header {
     display: flex;
     align-items: center;
-    height: 65px;
+    height: auto;
     background: linear-gradient(90deg, #672280 1.18%, #A626D3 100%);
     color: white;
-    padding: 20px;
+    padding: 10px;
+    gap: 10px;
 }
 
 .header--title {
@@ -23,9 +24,9 @@ body {
 
 .header--button {
     cursor: pointer;
-    width: 10%;
+    width: auto;
     height: 40px;
-    margin-left: 10px;
+    padding: 5px;
     border-radius: 5px;
     background-color: transparent;
     border: 2px solid white;
@@ -54,6 +55,8 @@ body {
 
 #personTable td, #personTable th {
     border-bottom: 1px solid #ddd;
+    width: fit-content;
+    word-wrap: normal;
     padding: 8px;
 }
 
@@ -70,11 +73,10 @@ body {
 }
 
 #personTable button {
+    width: 50%;
     cursor: pointer;
-    width: 40%;
     height: auto;
-    padding-top: 6px;
-    padding-bottom: 6px;
+    padding: 6px;
     margin-left: 10px;
     border-radius: 5px;
     background-color: transparent;
@@ -91,6 +93,7 @@ body {
 }
 
 #personTable .deleteBtn {
+    width: 30%;
     background-color: transparent;
     border: 2px solid #fa0000;
     color: rgba(84, 5, 6, 0.96);
@@ -124,9 +127,6 @@ footer button {
 footer button:hover {
     font-weight: bold;
     font-size: x-large;
-    background-color: transparent;
-    border: 2px solid #ff0000;
-    color: rgba(253, 1, 1, 0.96);
 }
 
 .popupContainer {
@@ -139,12 +139,21 @@ footer button:hover {
     z-index: 9;
 }
 
+.popupContainer input:required {
+    background-color: rgba(255, 0, 0, 0.09);
+}
+
+.required:after {
+    content: " *";
+    color: red;
+}
+
 .formContainer {
     max-width: 300px;
     background-color: white;
 }
 
-.formContainer input, .formContainer label {
+.formContainer input {
     width: 100%;
     padding: 15px;
     margin: 5px 0 22px 0;
